@@ -5,7 +5,7 @@ import * as Yup from "yup";
 
 const logInSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email required"),
-  passsword: Yup.string()
+  password: Yup.string()
     .min(6, "Password too short")
     .required("Password required"),
 });
@@ -37,6 +37,7 @@ export default function LogIn() {
               onChangeText={handleChange("email")}
               onBlur={handleBlur("email")}
               value={values.email}
+              keyboardType="email-address"
             />
             {touched.email && errors.email && (
               <Text style={styles.error}>{errors.email}</Text>
@@ -50,7 +51,7 @@ export default function LogIn() {
               onBlur={handleBlur("password")}
               value={values.password}
             />
-            {touched.email && errors.email && (
+            {touched.password && errors.password && (
               <Text style={styles.error}>{errors.password}</Text>
             )}
           </View>
