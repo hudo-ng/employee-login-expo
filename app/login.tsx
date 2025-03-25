@@ -6,7 +6,12 @@ import * as Yup from "yup";
 const logInSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email required"),
   password: Yup.string()
-    .min(6, "Password too short")
+    .required("Password is required")
+    .min(8, "Minimum 8 characters")
+    .matches(/[A-Z]/, "Must contain an uppercase letter")
+    .matches(/[a-z]/, "Must contain a lowercase letter")
+    .matches(/[0-9]/, "Must contain a number")
+    .matches(/[^a-zA-Z0-9]/, "Must contain a special character")
     .required("Password required"),
 });
 
