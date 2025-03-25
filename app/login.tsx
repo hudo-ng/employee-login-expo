@@ -1,7 +1,16 @@
 import { useRouter } from "expo-router";
 import { Formik, validateYupSchema } from "formik";
-import { Text, View, StyleSheet, TextInput, Pressable } from "react-native";
+import { useContext } from "react";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  Alert,
+} from "react-native";
 import * as Yup from "yup";
+import { AuthContext } from "../utils/authContext";
 
 const logInSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email required"),
@@ -17,12 +26,29 @@ const logInSchema = Yup.object().shape({
 
 export default function LogIn() {
   const router = useRouter();
+  const { login } = useContext(AuthContext);
   return (
     <Formik
       initialValues={{ email: "", password: "" }}
       validationSchema={logInSchema}
-      onSubmit={() => {
-        router.push("/");
+      onSubmit={async (values, { setSubmitting }) => {
+        try {
+          const res = await fetch("http://10.0.0.191:3000/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: values.email,
+              password: values.password,
+            }),
+          });
+          const data = await res.json();
+          const token = data.token;
+          await login(token);
+          setSubmitting(false);
+          router.replace("/");
+        } catch (error) {
+          Alert.alert(error.message);
+        }
       }}
     >
       {({
@@ -63,7 +89,7 @@ export default function LogIn() {
 
           <View style={styles.btnContainer}>
             <Pressable
-              onPress={() => handleSubmit()}
+              onPress={handleSubmit}
               style={({ pressed }) => [
                 styles.btn,
                 pressed && styles.pressedBtn,

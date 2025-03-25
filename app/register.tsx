@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  Alert,
+} from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "expo-router";
@@ -30,7 +37,7 @@ const initialValues = {
   email: "",
   password: "",
   confirmedPassword: "",
-  deparment: "",
+  department: "",
   phone: "",
 };
 
@@ -40,7 +47,31 @@ export default function Register() {
     <Formik
       initialValues={initialValues}
       validationSchema={registerSchema}
-      onSubmit={() => {}}
+      onSubmit={async (values, { setSubmitting, resetForm }) => {
+        try {
+          const res = await fetch("http://10.0.0.191:3000/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: values.name,
+              email: values.email,
+              password: values.password,
+              phone: values.phone,
+              department: values.department,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            Alert.alert("Register failed");
+            throw new Error(data.message || "Registration failed");
+          }
+          setSubmitting(false);
+          resetForm();
+          router.replace("/login");
+        } catch (error) {
+          Alert.alert("Registration failed");
+        }
+      }}
     >
       {({
         handleChange,
@@ -51,7 +82,19 @@ export default function Register() {
         values,
       }) => (
         <View style={styles.container}>
-          <Text style={styles.title}>Log In</Text>
+          <Text style={styles.title}>Register</Text>
+          <View style={styles.formField}>
+            <TextInput
+              placeholder="Name"
+              style={styles.input}
+              onChangeText={handleChange("name")}
+              onBlur={handleBlur("name")}
+              value={values.name}
+            />
+            {touched.name && errors.name && (
+              <Text style={styles.error}>{errors.name}</Text>
+            )}
+          </View>
           <View style={styles.formField}>
             <TextInput
               placeholder="Email"
@@ -107,31 +150,31 @@ export default function Register() {
               style={styles.input}
               onChangeText={handleChange("department")}
               onBlur={handleBlur("department")}
-              value={values.deparment}
+              value={values.department}
             />
             {touched.password && errors.password && (
-              <Text style={styles.error}>{errors.deparment}</Text>
+              <Text style={styles.error}>{errors.department}</Text>
             )}
           </View>
 
           <View style={styles.btnContainer}>
             <Pressable
-              onPress={() => handleSubmit()}
+              onPress={handleSubmit}
               style={({ pressed }) => [
                 styles.btn,
                 pressed && styles.pressedBtn,
               ]}
             >
-              <Text style={styles.btnText}>Log In</Text>
+              <Text style={styles.btnText}>Register</Text>
             </Pressable>
             <Pressable
-              onPress={() => router.push("/register")}
+              onPress={() => router.push("/login")}
               style={({ pressed }) => [
                 styles.btnSecondary,
                 pressed && styles.pressedBtn,
               ]}
             >
-              <Text>Register</Text>
+              <Text>Log in</Text>
             </Pressable>
           </View>
         </View>
